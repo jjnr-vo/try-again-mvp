@@ -11,18 +11,15 @@ function App() {
   const [attempts, setAttempts] = useState(0);
   const [guesses, setGuesses] = useState([]);
   const [gameState, setGameState] = useState("input");
-
   const [loadingHelperResource, setLoadingHelperResource] = useState(false);
+  const [riddle, setRiddle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const generateDescription = (word) => {
-    // Simulate generating a description based on the word
-    return `This is a description for the word "${word}". It is related to something you might encounter in your daily life. Think about the context where you would find this word, and consider its various meanings. Imagine a scenario where this word would be essential for understanding a concept or solving a problem.`;
-  };
 
   const handleWordSubmit = () => {
-    setDescription(generateDescription(wordInput));
     setGameState("riddle");
     setWord(wordInput);
+    generateRiddle(wordInput)
     setWordInput("");
   };
 
@@ -31,6 +28,34 @@ function App() {
     setAttempts(attempts + 1);
     if (attempts >= 9) {
       setGameState("gameOver");
+    }
+  };
+  const generateRiddle = async (word) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_PROJECT_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [{
+            role: "system",
+            content: `Return a riddle about the word: ${word}. Do not include the answer in the result.`
+          }]
+        })
+      });
+
+      const data = await response.json();
+      setRiddle(data.choices[0].message.content);
+      setGameState('riddle');
+    } catch (error) {
+      console.error('Error generating riddle:', error);
+      // setMessage('Failed to generate riddle. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,17 +70,17 @@ function App() {
               value={wordInput}
               onChange={(e) => setWordInput(e.target.value)}
               placeholder="Enter a word"
-              disabled={description !== ""}
+              disabled={riddle !== ""}
             />
-            <button onClick={handleWordSubmit} disabled={description !== ""}>
+            <button onClick={handleWordSubmit} disabled={riddle !== ""}>
               Submit Word
             </button>
           </div>
         )}
-        {gameState === "riddle" && description && (
+        {gameState === "riddle" && riddle && (
           <div>
-            <p>{description}</p>
-
+            <p>{riddle}</p>
+            {console.log(riddle)}
             <h3>Guess the Word</h3>
             <input
               type="text"
