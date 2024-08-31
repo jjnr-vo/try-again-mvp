@@ -1,14 +1,15 @@
 import "./App.css";
 import { useState } from "react";
 import VisualHelper from "./components/helper-options/visual-helper";
+import AudioHelper from "./components/helper-options/audio-helper";
 
 function App() {
+  const [wordInput, setWordInput] = useState("");
   const [word, setWord] = useState("");
   const [description, setDescription] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [guesses, setGuesses] = useState([]);
   const [gameState, setGameState] = useState("input");
-
 
   const generateDescription = (word) => {
     // Simulate generating a description based on the word
@@ -16,30 +17,30 @@ function App() {
   };
 
   const handleWordSubmit = () => {
-    setDescription(generateDescription(word));
-    setWord("");
-    setGameState('riddle');
+    setDescription(generateDescription(wordInput));
+    setGameState("riddle");
+    setWord(wordInput);
+    setWordInput("");
   };
 
   const handleGuess = (guess) => {
     setGuesses([...guesses, guess]);
     setAttempts(attempts + 1);
     if (attempts >= 9) {
-      setGameState('gameOver');
+      setGameState("gameOver");
     }
   };
-  
 
   return (
     <div className="App">
       <h1>Try Again</h1>
       <div className="container">
-      {gameState === "input" &&
-            <div>
+        {gameState === "input" && (
+          <div>
             <input
               type="text"
-              value={word}
-              onChange={(e) => setWord(e.target.value)}
+              value={wordInput}
+              onChange={(e) => setWordInput(e.target.value)}
               placeholder="Enter a word"
               disabled={description !== ""}
             />
@@ -47,37 +48,34 @@ function App() {
               Submit Word
             </button>
           </div>
-      }
-      {gameState === "riddle" &&
-            description && (
-              <div>
-                <p>{description}</p>
-
-                <h3>Guess the Word</h3>
-        <input
-          type="text"
-          placeholder="Enter your guess"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleGuess(e.target.value);
-              e.target.value = "";
-            }
-          }}
-        />
+        )}
+        {gameState === "riddle" && description && (
           <div>
-            <h3>Helper Options</h3>
-            <VisualHelper word={word} />
-            <button onClick={() => alert("Audio Hint")}>Get Audio Hint</button>
-          </div>
-        </div>
-            )
-            
-      }
-      {gameState === "gameOver" &&
-        <p>Game Over! You've used all your attempts.</p>
-      }
+            <p>{description}</p>
 
-    </div></div>
+            <h3>Guess the Word</h3>
+            <input
+              type="text"
+              placeholder="Enter your guess"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleGuess(e.target.value);
+                  e.target.value = "";
+                }
+              }}
+            />
+            <div>
+              <h3>Helper Options</h3>
+              <VisualHelper word={word} />
+              <AudioHelper word={word} />
+            </div>
+          </div>
+        )}
+        {gameState === "gameOver" && (
+          <p>Game Over! You've used all your attempts.</p>
+        )}
+      </div>
+    </div>
   );
 }
 
