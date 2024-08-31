@@ -7,7 +7,8 @@ function App() {
   const [description, setDescription] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [guesses, setGuesses] = useState([]);
-  const [gameOver, setGameOver] = useState(false);
+  const [gameState, setGameState] = useState("input");
+
 
   const generateDescription = (word) => {
     // Simulate generating a description based on the word
@@ -17,43 +18,42 @@ function App() {
   const handleWordSubmit = () => {
     setDescription(generateDescription(word));
     setWord("");
+    setGameState('riddle');
   };
 
   const handleGuess = (guess) => {
     setGuesses([...guesses, guess]);
     setAttempts(attempts + 1);
     if (attempts >= 9) {
-      setGameOver(true);
+      setGameState('gameOver');
     }
   };
+  
 
   return (
     <div className="App">
-      <h1>Word Guessing Game</h1>
-      <div>
-        <input
-          type="text"
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
-          placeholder="Enter a word"
-          disabled={description !== ""}
-        />
-        <button onClick={handleWordSubmit} disabled={description !== ""}>
-          Submit Word
-        </button>
-      </div>
-      {description && (
-        <div>
-          <p>{description}</p>
-          <div>
-            <h3>Helper Options</h3>
-            <VisualHelper word={word} />
-            <button onClick={() => alert("Audio Hint")}>Get Audio Hint</button>
+      <h1>Try Again</h1>
+      <div className="container">
+      {gameState === "input" &&
+            <div>
+            <input
+              type="text"
+              value={word}
+              onChange={(e) => setWord(e.target.value)}
+              placeholder="Enter a word"
+              disabled={description !== ""}
+            />
+            <button onClick={handleWordSubmit} disabled={description !== ""}>
+              Submit Word
+            </button>
           </div>
-        </div>
-      )}
-      <div>
-        <h3>Guess the Word</h3>
+      }
+      {gameState === "riddle" &&
+            description && (
+              <div>
+                <p>{description}</p>
+
+                <h3>Guess the Word</h3>
         <input
           type="text"
           placeholder="Enter your guess"
@@ -63,13 +63,21 @@ function App() {
               e.target.value = "";
             }
           }}
-          disabled={gameOver}
         />
-        <p>Attempts: {attempts}/10</p>
-        <p>Guesses: {guesses.join(", ")}</p>
-        {gameOver && <p>Game Over! You've used all your attempts.</p>}
-      </div>
-    </div>
+          <div>
+            <h3>Helper Options</h3>
+            <VisualHelper word={word} />
+            <button onClick={() => alert("Audio Hint")}>Get Audio Hint</button>
+          </div>
+        </div>
+            )
+            
+      }
+      {gameState === "gameOver" &&
+        <p>Game Over! You've used all your attempts.</p>
+      }
+
+    </div></div>
   );
 }
 
