@@ -1,20 +1,21 @@
 import { useState } from "react";
 
-function VisualHelper({ word }) {
+function VisualHelper({ word, setLoadingHelperResource }) {
   const [visualHint, setVisualHint] = useState(null);
 
   const generateVisualHint = async (word) => {
-    console.log(
-      "generateVisualHint",
-      process.env.REACT_APP_OPENAI_PROJECT_API_KEY
-    );
+    if (visualHint) {
+      return;
+    }
+
+    setLoadingHelperResource(true);
     try {
       const response = await fetch(
         "https://api.openai.com/v1/images/generations",
         {
           method: "POST",
           body: JSON.stringify({
-            prompt: `An abstract representation of the word "${word}" surrounded by unrelated elements.`,
+            prompt: `Create a photograph of ${word} within its natural context.`,
             n: 1,
             size: "512x512",
           }),
@@ -25,11 +26,12 @@ function VisualHelper({ word }) {
         }
       );
 
-      const imageUrl = response.data.data[0].url;
-      setVisualHint(imageUrl);
+      const { data } = await response.json();
+      setVisualHint(data[0].url);
+      setLoadingHelperResource(false);
     } catch (error) {
       console.error("Error fetching visual hint:", error);
-      setVisualHint(null);
+      setLoadingHelperResource(false);
     }
   };
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function AudioHelper({ word }) {
+function AudioHelper({ word, setLoadingHelperResource }) {
   const [textForAudioHint, setTextForAudioHint] = useState(null);
 
   const generateAudioHint = async (word) => {
@@ -8,6 +8,7 @@ function AudioHelper({ word }) {
       handleSpeechSynthesis(textForAudioHint);
     }
 
+    setLoadingHelperResource(true);
     try {
       const textForAudioResponse = await fetch(
         "https://api.openai.com/v1/chat/completions",
@@ -34,9 +35,10 @@ function AudioHelper({ word }) {
 
       setTextForAudioHint(messageContent);
       handleSpeechSynthesis(messageContent);
+      setLoadingHelperResource(false);
     } catch (error) {
       console.error("Error fetching audio hint:", error);
-      setTextForAudioHint(null);
+      setLoadingHelperResource(false);
     }
   };
 
